@@ -4,6 +4,7 @@ from flask import Flask, request, jsonify, send_file, after_this_request
 import nanoid
 from flask_cors import CORS
 import os
+from enhancement  import enhancement
 
 app = Flask(__name__)
 app.json.sort_keys = False
@@ -18,7 +19,7 @@ def directory_analyze():
     dpi = 300
     if 'dpi' in request.get_json():
         dpi = request.get_json()['dpi']
-    row_count = 128
+    row_count = 192
     row_height = dpi*11.69/row_count
     table = [{
         "pos": [item['location'][0][0],round(item['location'][0][1]/row_height)],
@@ -47,12 +48,11 @@ def directory_analyze():
         table[0][1] = "1"
     return jsonify(table=table)
 
-@app.route('/background-detect', methods=['POST'])
-def background_detect():
+@app.route('/picture-enhancement', methods=['POST'])
+def picture_enhancement():
     file_name = f'/tmp/{nanoid.generate(size=10)}.jpg'
     request.files['jpg'].save(file_name)
+    enhancement(file_name)
     return send_file(file_name, mimetype='image/jpg')
-
-
 if __name__ == "__main__":
     app.run("0.0.0.0", 5001)
