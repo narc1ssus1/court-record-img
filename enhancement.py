@@ -9,7 +9,6 @@ ocr_address = "http://127.0.0.1:5000"
 def enhancement(img_path):
     # 读取输入图像
     input_image = cv2.imread(img_path)
-    input_image = cv2.rotate(input_image, cv2.ROTATE_90_CLOCKWISE)
 
     # 转换图像为灰度
     gray_image = cv2.cvtColor(input_image, cv2.COLOR_BGR2GRAY)
@@ -56,6 +55,5 @@ def enhancement(img_path):
     binary[binary <= threadshold] = 0
     binary = cv2.merge([binary, binary, binary])
     dst = np.maximum(dst, binary)
-    dst = cv2.flip(dst, 1)
     cv2.imwrite(img_path, dst, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
     return img_path
