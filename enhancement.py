@@ -1,7 +1,10 @@
 import cv2
 import numpy as np
+import requests
 
 threadshold = 155
+ocr_address = "http://127.0.0.1:5000"
+
 
 def enhancement(img_path):
     # 读取输入图像
@@ -11,7 +14,7 @@ def enhancement(img_path):
     gray_image = cv2.cvtColor(input_image, cv2.COLOR_BGR2GRAY)
 
     # 使用阈值分割将白色纸张变成黑色
-    _, thresholded_image = cv2.threshold(gray_image,150, 255, cv2.THRESH_BINARY)
+    _, thresholded_image = cv2.threshold(gray_image, 150, 255, cv2.THRESH_BINARY)
 
     # 找到轮廓
     contours, _ = cv2.findContours(thresholded_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -38,7 +41,7 @@ def enhancement(img_path):
     width = 2000
     height = 2828
 
-    #获取四个顶点坐标
+    # 获取四个顶点坐标
     pts = np.float32(tuple(points))
     dst_pts = np.float32([[0, 0], [width, 0], [width, height], [0, height]])
 
@@ -47,14 +50,18 @@ def enhancement(img_path):
     dst = cv2.warpPerspective(input_image, M, (width, height))
     binary = cv2.cvtColor(dst, cv2.COLOR_BGR2GRAY)
 
-    #二值化叠加增强图像
+    # 二值化叠加增强图像
     binary[binary > threadshold] = 255
     binary[binary <= threadshold] = 0
     binary = cv2.merge([binary, binary, binary])
     dst = np.maximum(dst, binary)
     dst = cv2.flip(dst, 1)
     cv2.imwrite(img_path, dst, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
+    files = {'jpg':('file.jpg', open(img_path, 'rb'), 'application/octet-stream')}
+    try:
+        response = requests.post(ocr_address+"/slope-detect",data={}, files=files)
+        f = open(img_path, 'wb')
+        f.write(response.content)
+    except:
+        pass
     return img_path
-
-
-
