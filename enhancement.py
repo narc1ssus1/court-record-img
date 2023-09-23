@@ -56,4 +56,11 @@ def enhancement(img_path):
     binary = cv2.merge([binary, binary, binary])
     dst = np.maximum(dst, binary)
     cv2.imwrite(img_path, dst, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
+    files = {'jpg':('file.jpg', open(img_path, 'rb'), 'application/octet-stream')}
+    try:
+        response = requests.post(ocr_address+"/slope-detect",data={}, files=files)
+        f = open(img_path, 'wb')
+        f.write(response.content)
+    except:
+        pass
     return img_path
