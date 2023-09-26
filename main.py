@@ -16,10 +16,10 @@ except:
 @app.route('/directory-analyze', methods=['POST'])
 def directory_analyze():
     table = request.get_json()['table_result']
-    dpi = 300
+    dpi = 240
     if 'dpi' in request.get_json():
         dpi = request.get_json()['dpi']
-    row_count = 192
+    row_count = 300
     row_height = dpi*11.69/row_count
     table = [{
         "pos": [item['location'][0][0],round(item['location'][0][1]/row_height)],
@@ -28,7 +28,7 @@ def directory_analyze():
     new_table = [[]]
     y_pos = table[0]['pos'][1]
     for cell in table:
-        if abs(cell['pos'][1]-y_pos) > 2:
+        if abs(cell['pos'][1]-y_pos) > 1:
             new_table.append([cell['words']])
             y_pos = cell['pos'][1]
         else:
@@ -44,8 +44,11 @@ def directory_analyze():
             page_pos = i
     table = [[item[content_pos],item[page_pos]] for item in new_table[1:] if len(item)==len(header)]
     table = [item for item in table if item!=["",""]]
-    if table[0][1] == "":
-        table[0][1] = "1"
+    try:
+        if table[0][1] == "":
+            table[0][1] = "1"
+    except:
+        pass
     return jsonify(table=table)
 
 @app.route('/picture-enhancement', methods=['POST'])

@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import requests
 
-threadshold = 160
+threadshold = 180
 ocr_address = "http://127.0.0.1:5000"
 
 
@@ -55,6 +55,7 @@ def enhancement(img_path):
     binary[binary <= threadshold] = 0
     binary = cv2.merge([binary, binary, binary])
     dst = np.maximum(dst, binary)
+    dst=np.flip(dst,1)
     cv2.imwrite(img_path, dst, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
     files = {'jpg':('file.jpg', open(img_path, 'rb'), 'application/octet-stream')}
     try:
