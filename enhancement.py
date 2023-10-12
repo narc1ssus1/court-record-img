@@ -48,19 +48,30 @@ def enhancement(img_path):
     ##透视变换进行梯形校正
     M = cv2.getPerspectiveTransform(pts, dst_pts)
     dst = cv2.warpPerspective(input_image, M, (width, height))
-    binary = cv2.cvtColor(dst, cv2.COLOR_BGR2GRAY)
-    #对图像左上角进行局部直方图均衡化
-    corner = binary[0:height // 3, 0:width // 3]
-    clahe = cv2.createCLAHE(clipLimit=2, tileGridSize=(64,64))
-    cl1 = clahe.apply(corner)
-    binary[0:height // 3, 0:width // 3] = cl1
-    binary[binary > threadshold] = 255
-    binary[binary <= threadshold] = 0
-    binary = cv2.merge([binary, binary, binary])
-    dst = np.maximum(dst, binary)
+    # binary = cv2.cvtColor(dst, cv2.COLOR_BGR2GRAY)
+
+    #对RGB三通道增加对比度
+    for i in range(3):
+        binary = dst[:, :, i].copy()
+        binary[binary > threadshold] = 255
+        binary[binary <= threadshold] = 0
+        dst[:, :, i] = np.maximum(dst[:, :, i], binary)
+
+    #对RGB三通道图像左上角进行局部直方图均衡化
+    corner = dst[0:height // 3, 0:width // 3]
+    clahe = cv2.createCLAHE(clipLimit=2, tileGridSize=(64, 64))
+    for i in range(3):
+        corner[:, :, i] = clahe.apply(corner[:, :, i])
+    dst[0:height // 3, 0:width // 3] = corner
+
+    #保存图像
     dst=np.flip(dst,1)
-    dst = cv2.resize(dst, (dst.shape[1] // 3, dst.shape[0] //3 ))
     cv2.imwrite(img_path, dst, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
+    # dst = cv2.resize(dst, (dst.shape[1] // 3, dst.shape[0] //3 ))
+    # cv2.imshow("dst", dst)
+    # cv2.waitKey(0)
+
+    #将图像调用到矩形倾斜校正接口
     files = {'jpg':('file.jpg', open(img_path, 'rb'), 'application/octet-stream')}
     try:
         response = requests.post(ocr_address+"/slope-detect",data={}, files=files)
@@ -68,6 +79,5 @@ def enhancement(img_path):
         f.write(response.content)
     except:
         pass
+
     return img_path
-
-
