@@ -59,10 +59,7 @@ def enhancement(img_path):
     binary = cv2.merge([binary, binary, binary])
     dst = np.maximum(dst, binary)
     dst=np.flip(dst,1)
-    dst = cv2.resize(dst, (dst.shape[1] // 2, dst.shape[0] // 2))
-    cv2.imshow("dst", dst)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    dst = cv2.resize(dst, (dst.shape[1] // 3, dst.shape[0] //3 ))
     cv2.imwrite(img_path, dst, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
     files = {'jpg':('file.jpg', open(img_path, 'rb'), 'application/octet-stream')}
     try:
