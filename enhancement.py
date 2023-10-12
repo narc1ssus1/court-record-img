@@ -49,13 +49,20 @@ def enhancement(img_path):
     M = cv2.getPerspectiveTransform(pts, dst_pts)
     dst = cv2.warpPerspective(input_image, M, (width, height))
     binary = cv2.cvtColor(dst, cv2.COLOR_BGR2GRAY)
-
-    # 二值化叠加增强图像
+    #对图像左上角进行局部直方图均衡化
+    corner = binary[0:height // 3, 0:width // 3]
+    clahe = cv2.createCLAHE(clipLimit=2, tileGridSize=(64,64))
+    cl1 = clahe.apply(corner)
+    binary[0:height // 3, 0:width // 3] = cl1
     binary[binary > threadshold] = 255
     binary[binary <= threadshold] = 0
     binary = cv2.merge([binary, binary, binary])
     dst = np.maximum(dst, binary)
     dst=np.flip(dst,1)
+    dst = cv2.resize(dst, (dst.shape[1] // 2, dst.shape[0] // 2))
+    cv2.imshow("dst", dst)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
     cv2.imwrite(img_path, dst, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
     files = {'jpg':('file.jpg', open(img_path, 'rb'), 'application/octet-stream')}
     try:
@@ -65,3 +72,5 @@ def enhancement(img_path):
     except:
         pass
     return img_path
+
+
